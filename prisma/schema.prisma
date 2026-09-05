@@ -1,0 +1,157 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  DIRECTEUR
+  CAISSE
+}
+
+enum MethodePaiement {
+  ESPECES
+  MOBILE_MONEY
+}
+
+// Une école cliente de la plateforme. Tout est rattaché à une École
+// pour que la plateforme supporte plusieurs écoles dès le départ.
+model Ecole {
+  id        String   @id @default(cuid())
+  nom       String
+  adresse   String?
+  telephone String?
+  createdAt DateTime @default(now())
+
+  utilisateurs Utilisateur[]
+  niveaux      Niveau[]
+  tranches     Tranche[]
+  eleves       Eleve[]
+
+  @@map("ecoles")
+}
+
+// Un compte directeur ou caisse, rattaché à une seule école.
+model Utilisateur {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  motDePasse String
+  nom        String
+  role       Role
+  createdAt  DateTime @default(now())
+
+  ecoleId String
+  ecole   Ecole  @relation(fields: [ecoleId], references: [id])
+
+  paiementsEnregistres Paiement[]
+
+  @@map("utilisateurs")
+}
+
+// Un niveau/classe défini par une école (ex: "6ème", "Terminale D").
+// Chaque école définit ses propres niveaux et leur tarification.
+model Niveau {
+  id      String @id @default(cuid())
+  nom     String
+  ordre   Int    @default(0)
+
+  ecoleId String
+  ecole   Ecole  @relation(fields: [ecoleId], references: [id])
+
+  eleves Eleve[]
+  tarifs TarifTranche[]
+
+  @@unique([ecoleId, nom])
+  @@map("niveaux")
+}
+
+// Un élève, rattaché à une école et à un niveau.
+model Eleve {
+  id              String   @id @default(cuid())
+  nom             String
+  prenom          String
+  parentNom       String
+  // Numéro WhatsApp du parent principal (celui qui paie) — au format
+  // international, ex: "+2250700000000". C'est le champ central du projet.
+  parentTelephone String
+  createdAt       DateTime @default(now())
+
+  ecoleId String
+  ecole   Ecole  @relation(fields: [ecoleId], references: [id])
+
+  niveauId String
+  niveau   Niveau @relation(fields: [niveauId], references: [id])
+
+  paiements Paiement[]
+
+  @@map("eleves")
+}
+
+// Une échéance de scolarité définie par une école (ex: "Inscription",
+// "Trimestre 1"). Le montant n'est PAS stocké ici : il dépend du niveau,
+// voir TarifTranche.
+model Tranche {
+  id           String    @id @default(cuid())
+  nom          String
+  ordre        Int       @default(0)
+  dateEcheance DateTime?
+
+  ecoleId String
+  ecole   Ecole  @relation(fields: [ecoleId], references: [id])
+
+  tarifs    TarifTranche[]
+  paiements Paiement[]
+
+  @@unique([ecoleId, nom])
+  @@map("tranches")
+}
+
+// La grille tarifaire : combien coûte une Tranche donnée pour un Niveau
+// donné. Permet à chaque école d'avoir des prix différents par trimestre
+// et par classe, sans rien coder en dur.
+model TarifTranche {
+  id      String @id @default(cuid())
+  montant Int // en FCFA, toujours un nombre entier (pas de centimes)
+
+  trancheId String
+  tranche   Tranche @relation(fields: [trancheId], references: [id])
+
+  niveauId String
+  niveau   Niveau  @relation(fields: [niveauId], references: [id])
+
+  @@unique([trancheId, niveauId])
+  @@map("tarifs_tranches")
+}
+
+// Un encaissement réel. Le solde d'un élève sur une tranche =
+// TarifTranche.montant (pour son niveau) − somme de ses Paiements sur
+// cette tranche.
+model Paiement {
+  id      Int             @id @default(autoincrement())
+  montant Int
+  methode MethodePaiement
+  date    DateTime        @default(now())
+
+  // Rempli quand le reçu WhatsApp a bien été envoyé (pour éviter les
+  // doublons et pouvoir vérifier/relancer les envois ratés).
+  recuEnvoyeAt DateTime?
+
+  eleveId String
+  eleve   Eleve  @relation(fields: [eleveId], references: [id])
+
+  trancheId String
+  tranche   Tranche @relation(fields: [trancheId], references: [id])
+
+  enregistreParId String
+  enregistrePar   Utilisateur @relation(fields: [enregistreParId], references: [id])
+
+  @@map("paiements")
+}
