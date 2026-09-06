@@ -2,8 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -13,13 +12,25 @@ datasource db {
 }
 
 enum Role {
+  SUPER_ADMIN
   DIRECTEUR
   CAISSE
+  // Compte technique unique, jamais utilisé pour se connecter : sert
+  // uniquement à tracer "qui a enregistré ce paiement" quand un paiement
+  // en ligne CinetPay est confirmé automatiquement par le webhook, sans
+  // caissier humain impliqué.
+  SYSTEME
 }
 
 enum MethodePaiement {
   ESPECES
   MOBILE_MONEY
+}
+
+enum StatutTransaction {
+  EN_ATTENTE
+  REUSSI
+  ECHEC
 }
 
 // Une école cliente de la plateforme. Tout est rattaché à une École
@@ -31,15 +42,30 @@ model Ecole {
   telephone String?
   createdAt DateTime @default(now())
 
-  utilisateurs Utilisateur[]
-  niveaux      Niveau[]
-  tranches     Tranche[]
-  eleves       Eleve[]
+  // Intégration paiement en ligne (CinetPay). Chaque école connecte son
+  // propre compte marchand : l'argent va directement chez elle, EcolaPay
+  // ne touche jamais les fonds. Optionnel, désactivé par défaut.
+  paiementEnLigneActif Boolean @default(false)
+  cinetpayApiKey       String?
+  cinetpaySiteId       String?
+  // Pourcentage de "frais de confort" répercuté au parent lors d'un
+  // paiement en ligne (couvre le frais CinetPay, à la charge du parent
+  // et non de l'école ni d'EcolaPay). Ex : 2 = 2%. Contrôlé uniquement
+  // par le Super Admin EcolaPay, pas par l'école elle-même.
+  fraisConfortPourcent Int?
+
+  utilisateurs         Utilisateur[]
+  niveaux              Niveau[]
+  tranches             Tranche[]
+  eleves               Eleve[]
+  transactionsPaiement TransactionPaiement[]
 
   @@map("ecoles")
 }
 
-// Un compte directeur ou caisse, rattaché à une seule école.
+// Un compte directeur, caisse, ou super admin EcolaPay. Un directeur/caisse
+// est rattaché à une seule école ; un super admin n'est rattaché à aucune
+// école (ecoleId nul), il supervise toute la plateforme.
 model Utilisateur {
   id         String   @id @default(cuid())
   email      String   @unique
@@ -48,8 +74,8 @@ model Utilisateur {
   role       Role
   createdAt  DateTime @default(now())
 
-  ecoleId String
-  ecole   Ecole  @relation(fields: [ecoleId], references: [id])
+  ecoleId String?
+  ecole   Ecole?  @relation(fields: [ecoleId], references: [id])
 
   paiementsEnregistres Paiement[]
 
@@ -90,7 +116,8 @@ model Eleve {
   niveauId String
   niveau   Niveau @relation(fields: [niveauId], references: [id])
 
-  paiements Paiement[]
+  paiements            Paiement[]
+  transactionsPaiement TransactionPaiement[]
 
   @@map("eleves")
 }
@@ -107,8 +134,9 @@ model Tranche {
   ecoleId String
   ecole   Ecole  @relation(fields: [ecoleId], references: [id])
 
-  tarifs    TarifTranche[]
-  paiements Paiement[]
+  tarifs               TarifTranche[]
+  paiements            Paiement[]
+  transactionsPaiement TransactionPaiement[]
 
   @@unique([ecoleId, nom])
   @@map("tranches")
@@ -153,5 +181,42 @@ model Paiement {
   enregistreParId String
   enregistrePar   Utilisateur @relation(fields: [enregistreParId], references: [id])
 
+  // Présent seulement si ce paiement a été créé automatiquement suite à un
+  // paiement en ligne CinetPay confirmé par webhook (sinon paiement en
+  // espèces/mobile money enregistré manuellement par la Caisse).
+  transaction TransactionPaiement?
+
   @@map("paiements")
+}
+
+// Une tentative de paiement en ligne via CinetPay, créée dès que le lien de
+// paiement est généré. Le statut ne passe à REUSSI/ECHEC qu'après
+// confirmation par le webhook CinetPay + vérification via l'API officielle
+// (jamais sur la seule foi du retour navigateur du parent) — voir doc
+// CinetPay "checkout/notification". C'est cette table qui fait le pont
+// entre le transaction_id envoyé à CinetPay et l'élève/la tranche concernés.
+model TransactionPaiement {
+  id            String            @id @default(cuid())
+  transactionId String            @unique
+  montantDu     Int // solde dû au moment de la génération du lien
+  montantFrais  Int // frais de confort calculé, à la charge du parent
+  montantTotal  Int // montantDu + montantFrais, réellement débité en ligne
+  statut        StatutTransaction @default(EN_ATTENTE)
+  createdAt     DateTime          @default(now())
+  confirmeAt    DateTime?
+
+  ecoleId String
+  ecole   Ecole  @relation(fields: [ecoleId], references: [id])
+
+  eleveId String
+  eleve   Eleve  @relation(fields: [eleveId], references: [id])
+
+  trancheId String
+  tranche   Tranche @relation(fields: [trancheId], references: [id])
+
+  // Rempli une fois le paiement confirmé et le Paiement créé automatiquement.
+  paiementId Int?      @unique
+  paiement   Paiement? @relation(fields: [paiementId], references: [id])
+
+  @@map("transactions_paiement")
 }
