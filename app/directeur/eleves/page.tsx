@@ -2,6 +2,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { EnteteEspace } from "@/components/EnteteEspace";
+import { boutonPrimaire, carte, champTexte, lienDanger, lienDiscret } from "@/lib/ui";
 
 // Page Directeur : gestion des élèves de son école. Étape 4 (dernière) de
 // la config école — nécessite qu'au moins un niveau existe déjà.
@@ -74,119 +76,117 @@ export default async function ElevesPage() {
 
   if (niveaux.length === 0) {
     return (
-      <div className="mx-auto max-w-2xl p-8">
-        <h1 className="text-xl font-semibold">Élèves</h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Il faut d&apos;abord créer au moins un niveau avant de pouvoir
-          ajouter des élèves.
-        </p>
-        <Link
-          href="/directeur/niveaux"
-          className="mt-4 inline-block text-sm text-blue-600 hover:underline"
-        >
-          Aller à Niveaux
-        </Link>
+      <div className="min-h-screen">
+        <EnteteEspace role="Directeur" nomUtilisateur={session.user.name} />
+        <div className="mx-auto max-w-2xl p-8">
+          <h1 className="text-xl font-semibold text-ink">Élèves</h1>
+          <p className="mt-2 text-sm text-gray-500">
+            Il faut d&apos;abord créer au moins un niveau avant de pouvoir
+            ajouter des élèves.
+          </p>
+          <Link href="/directeur/niveaux" className={`mt-4 inline-block ${lienDiscret}`}>
+            Aller à Niveaux
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl p-8">
-      <h1 className="text-xl font-semibold">Élèves de l&apos;école</h1>
-      <p className="mt-1 text-sm text-gray-600">
-        Le numéro WhatsApp est celui du parent qui paie — c&apos;est sur ce
-        numéro que les reçus et rappels seront envoyés automatiquement.
-      </p>
+    <div className="min-h-screen">
+      <EnteteEspace role="Directeur" nomUtilisateur={session.user.name} />
 
-      <form
-        action={ajouterEleve}
-        className="mt-6 grid grid-cols-1 gap-2 rounded border bg-white p-4 sm:grid-cols-2"
-      >
-        <input
-          name="nom"
-          type="text"
-          required
-          placeholder="Nom de l'élève"
-          className="rounded border px-3 py-2"
-        />
-        <input
-          name="prenom"
-          type="text"
-          required
-          placeholder="Prénom de l'élève"
-          className="rounded border px-3 py-2"
-        />
-        <input
-          name="parentNom"
-          type="text"
-          required
-          placeholder="Nom du parent (celui qui paie)"
-          className="rounded border px-3 py-2"
-        />
-        <input
-          name="parentTelephone"
-          type="tel"
-          required
-          placeholder="Numéro WhatsApp, ex : +2250700000000"
-          className="rounded border px-3 py-2"
-        />
-        <select
-          name="niveauId"
-          required
-          defaultValue=""
-          className="rounded border px-3 py-2 sm:col-span-2"
-        >
-          <option value="" disabled>
-            Choisir un niveau
-          </option>
-          {niveaux.map((niveau) => (
-            <option key={niveau.id} value={niveau.id}>
-              {niveau.nom}
-            </option>
-          ))}
-        </select>
-        <button
-          type="submit"
-          className="rounded bg-black px-4 py-2 text-white sm:col-span-2"
-        >
-          Ajouter l&apos;élève
-        </button>
-      </form>
+      <div className="mx-auto max-w-3xl p-8">
+        <h1 className="text-xl font-semibold text-ink">Élèves de l&apos;école</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Le numéro WhatsApp est celui du parent qui paie — c&apos;est sur ce
+          numéro que les reçus et rappels seront envoyés automatiquement.
+        </p>
 
-      <ul className="mt-6 divide-y rounded border bg-white">
-        {eleves.length === 0 && (
-          <li className="p-3 text-sm text-gray-500">
-            Aucun élève pour l&apos;instant.
-          </li>
-        )}
-        {eleves.map((eleve) => (
-          <li
-            key={eleve.id}
-            className="flex items-center justify-between p-3"
+        <form
+          action={ajouterEleve}
+          className={`mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 ${carte}`}
+        >
+          <input
+            name="nom"
+            type="text"
+            required
+            placeholder="Nom de l'élève"
+            className={`${champTexte} mt-0`}
+          />
+          <input
+            name="prenom"
+            type="text"
+            required
+            placeholder="Prénom de l'élève"
+            className={`${champTexte} mt-0`}
+          />
+          <input
+            name="parentNom"
+            type="text"
+            required
+            placeholder="Nom du parent (celui qui paie)"
+            className={`${champTexte} mt-0`}
+          />
+          <input
+            name="parentTelephone"
+            type="tel"
+            required
+            placeholder="Numéro WhatsApp, ex : +2250700000000"
+            className={`${champTexte} mt-0`}
+          />
+          <select
+            name="niveauId"
+            required
+            defaultValue=""
+            className={`${champTexte} mt-0 sm:col-span-2`}
           >
-            <div>
-              <div className="font-medium">
-                {eleve.prenom} {eleve.nom}{" "}
-                <span className="text-sm text-gray-500">
-                  ({eleve.niveau.nom})
-                </span>
+            <option value="" disabled>
+              Choisir un niveau
+            </option>
+            {niveaux.map((niveau) => (
+              <option key={niveau.id} value={niveau.id}>
+                {niveau.nom}
+              </option>
+            ))}
+          </select>
+          <button type="submit" className={`${boutonPrimaire} sm:col-span-2`}>
+            Ajouter l&apos;élève
+          </button>
+        </form>
+
+        <ul className={`mt-6 divide-y divide-black/5 ${carte} !p-0`}>
+          {eleves.length === 0 && (
+            <li className="p-4 text-sm text-gray-500">
+              Aucun élève pour l&apos;instant.
+            </li>
+          )}
+          {eleves.map((eleve) => (
+            <li
+              key={eleve.id}
+              className="flex items-center justify-between p-4"
+            >
+              <div>
+                <div className="font-medium text-ink">
+                  {eleve.prenom} {eleve.nom}{" "}
+                  <span className="text-sm text-gray-500">
+                    ({eleve.niveau.nom})
+                  </span>
+                </div>
+                <div className="text-sm text-gray-500">
+                  Parent : {eleve.parentNom} — {eleve.parentTelephone}
+                </div>
               </div>
-              <div className="text-sm text-gray-500">
-                Parent : {eleve.parentNom} — {eleve.parentTelephone}
-              </div>
-            </div>
-            <form action={supprimerEleve}>
-              <input type="hidden" name="id" value={eleve.id} />
-              <button
-                type="submit"
-                className="text-sm text-red-600 hover:underline"
-              >
-                Supprimer
-              </button>
-            </form>
-          </li>
-        ))}
-      </ul>
+              <form action={supprimerEleve}>
+                <input type="hidden" name="id" value={eleve.id} />
+                <button type="submit" className={lienDanger}>
+                  Supprimer
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

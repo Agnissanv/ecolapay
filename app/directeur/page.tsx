@@ -1,6 +1,8 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { EnteteEspace } from "@/components/EnteteEspace";
+import { carte } from "@/lib/ui";
 
 // Dashboard Directeur — vue de supervision. Cette première version se
 // recalcule à chaque chargement de page (pas encore de push temps réel
@@ -89,79 +91,85 @@ export default async function DirecteurPage() {
   const fcfa = (n: number) => `${n.toLocaleString("fr-FR")} FCFA`;
 
   return (
-    <div className="mx-auto max-w-4xl p-8">
-      <h1 className="text-xl font-semibold">Tableau de bord</h1>
-      <p className="mt-1 text-sm text-gray-600">
-        Connecté : {session.user.name}
-      </p>
+    <div className="min-h-screen">
+      <EnteteEspace role="Directeur" nomUtilisateur={session.user.name} />
 
-      <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <div className="rounded border bg-white p-4">
-          <div className="text-xs text-gray-500">Encaissé aujourd&apos;hui</div>
-          <div className="mt-1 text-lg font-semibold">{fcfa(encaisseAujourdHui)}</div>
-        </div>
-        <div className="rounded border bg-white p-4">
-          <div className="text-xs text-gray-500">Encaissé ce mois</div>
-          <div className="mt-1 text-lg font-semibold">{fcfa(encaisseCeMois)}</div>
-        </div>
-        <div className="rounded border bg-white p-4">
-          <div className="text-xs text-gray-500">Total encaissé</div>
-          <div className="mt-1 text-lg font-semibold">{fcfa(totalPaye)}</div>
-        </div>
-        <div className="rounded border bg-white p-4">
-          <div className="text-xs text-gray-500">Total dû</div>
-          <div className="mt-1 text-lg font-semibold">{fcfa(totalDu)}</div>
-        </div>
-        <div className="rounded border bg-white p-4">
-          <div className="text-xs text-gray-500">Impayés</div>
-          <div className="mt-1 text-lg font-semibold text-red-600">
-            {fcfa(totalImpayes)}
+      <div className="mx-auto max-w-4xl p-8">
+        <h1 className="text-xl font-semibold text-ink">Tableau de bord</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Vue d&apos;ensemble des encaissements de ton école.
+        </p>
+
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className={carte}>
+            <div className="text-xs text-gray-500">Encaissé aujourd&apos;hui</div>
+            <div className="mt-1 text-lg font-semibold text-ink">{fcfa(encaisseAujourdHui)}</div>
+          </div>
+          <div className={carte}>
+            <div className="text-xs text-gray-500">Encaissé ce mois</div>
+            <div className="mt-1 text-lg font-semibold text-ink">{fcfa(encaisseCeMois)}</div>
+          </div>
+          <div className={carte}>
+            <div className="text-xs text-gray-500">Total encaissé</div>
+            <div className="mt-1 text-lg font-semibold text-ink">{fcfa(totalPaye)}</div>
+          </div>
+          <div className={carte}>
+            <div className="text-xs text-gray-500">Total dû</div>
+            <div className="mt-1 text-lg font-semibold text-ink">{fcfa(totalDu)}</div>
+          </div>
+          <div className={carte}>
+            <div className="text-xs text-gray-500">Impayés</div>
+            <div className="mt-1 text-lg font-semibold text-red-600">
+              {fcfa(totalImpayes)}
+            </div>
+          </div>
+          <div className={carte}>
+            <div className="text-xs text-gray-500">Taux de recouvrement</div>
+            <div className="mt-1 text-lg font-semibold text-brand-700">
+              {tauxRecouvrement === null ? "—" : `${tauxRecouvrement}%`}
+            </div>
           </div>
         </div>
-        <div className="rounded border bg-white p-4">
-          <div className="text-xs text-gray-500">Taux de recouvrement</div>
-          <div className="mt-1 text-lg font-semibold">
-            {tauxRecouvrement === null ? "—" : `${tauxRecouvrement}%`}
-          </div>
+
+        <h2 className="mt-10 text-base font-semibold text-ink">
+          Élèves en retard ({retards.length})
+        </h2>
+        <div className={`mt-3 overflow-x-auto ${carte} !p-0`}>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-black/5 bg-brand-50/60 text-gray-600">
+                <th className="p-3 text-left font-medium">Élève</th>
+                <th className="p-3 text-left font-medium">Niveau</th>
+                <th className="p-3 text-left font-medium">Tranche</th>
+                <th className="p-3 text-left font-medium">Échéance</th>
+                <th className="p-3 text-right font-medium">Montant dû</th>
+              </tr>
+            </thead>
+            <tbody>
+              {retards.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="p-4 text-center text-gray-500">
+                    Aucun retard pour l&apos;instant.
+                  </td>
+                </tr>
+              )}
+              {retards.map((r, i) => (
+                <tr key={`${r.eleveId}-${i}`} className="border-b border-black/5 last:border-0">
+                  <td className="p-3">{r.nomComplet}</td>
+                  <td className="p-3">{r.niveau}</td>
+                  <td className="p-3">{r.tranche}</td>
+                  <td className="p-3">
+                    {r.dateEcheance.toLocaleDateString("fr-FR")}
+                  </td>
+                  <td className="p-3 text-right font-medium text-red-600">
+                    {fcfa(r.montant)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-
-      <h2 className="mt-8 text-lg font-semibold">
-        Élèves en retard ({retards.length})
-      </h2>
-      <table className="mt-3 w-full rounded border bg-white text-sm">
-        <thead>
-          <tr className="border-b bg-gray-50">
-            <th className="p-2 text-left">Élève</th>
-            <th className="p-2 text-left">Niveau</th>
-            <th className="p-2 text-left">Tranche</th>
-            <th className="p-2 text-left">Échéance</th>
-            <th className="p-2 text-right">Montant dû</th>
-          </tr>
-        </thead>
-        <tbody>
-          {retards.length === 0 && (
-            <tr>
-              <td colSpan={5} className="p-3 text-center text-gray-500">
-                Aucun retard pour l&apos;instant.
-              </td>
-            </tr>
-          )}
-          {retards.map((r, i) => (
-            <tr key={`${r.eleveId}-${i}`} className="border-b">
-              <td className="p-2">{r.nomComplet}</td>
-              <td className="p-2">{r.niveau}</td>
-              <td className="p-2">{r.tranche}</td>
-              <td className="p-2">
-                {r.dateEcheance.toLocaleDateString("fr-FR")}
-              </td>
-              <td className="p-2 text-right font-medium text-red-600">
-                {fcfa(r.montant)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   );
 }

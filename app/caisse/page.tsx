@@ -2,6 +2,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { EnteteEspace } from "@/components/EnteteEspace";
+import { carte, champTexte } from "@/lib/ui";
 
 // Caisse Éclair — étape 1 : recherche d'élève. La Caisse tape un nom ou
 // prénom et clique sur un résultat pour ouvrir la fiche de paiement.
@@ -36,42 +38,46 @@ export default async function CaissePage({
   });
 
   return (
-    <div className="mx-auto max-w-2xl p-8">
-      <h1 className="text-xl font-semibold">Caisse Éclair</h1>
-      <p className="mt-1 text-sm text-gray-600">
-        Recherche un élève pour enregistrer un paiement.
-      </p>
+    <div className="min-h-screen">
+      <EnteteEspace role="Caisse" nomUtilisateur={session.user.name} />
 
-      <form action="/caisse" method="get" className="mt-6">
-        <input
-          name="q"
-          type="text"
-          defaultValue={recherche}
-          placeholder="Rechercher par nom ou prénom..."
-          className="w-full rounded border px-3 py-2"
-        />
-      </form>
+      <div className="mx-auto max-w-2xl p-8">
+        <h1 className="text-xl font-semibold text-ink">Caisse Éclair</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Recherche un élève pour enregistrer un paiement.
+        </p>
 
-      <ul className="mt-6 divide-y rounded border bg-white">
-        {eleves.length === 0 && (
-          <li className="p-3 text-sm text-gray-500">Aucun élève trouvé.</li>
-        )}
-        {eleves.map((eleve) => (
-          <li key={eleve.id}>
-            <Link
-              href={`/caisse/eleves/${eleve.id}`}
-              className="flex items-center justify-between p-3 hover:bg-gray-50"
-            >
-              <span>
-                {eleve.prenom} {eleve.nom}
-              </span>
-              <span className="text-sm text-gray-500">
-                {eleve.niveau.nom}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+        <form action="/caisse" method="get" className="mt-6">
+          <input
+            name="q"
+            type="text"
+            defaultValue={recherche}
+            placeholder="Rechercher par nom ou prénom..."
+            className={`${champTexte} mt-0`}
+          />
+        </form>
+
+        <ul className={`mt-6 divide-y divide-black/5 ${carte} !p-0`}>
+          {eleves.length === 0 && (
+            <li className="p-4 text-sm text-gray-500">Aucun élève trouvé.</li>
+          )}
+          {eleves.map((eleve) => (
+            <li key={eleve.id}>
+              <Link
+                href={`/caisse/eleves/${eleve.id}`}
+                className="flex items-center justify-between p-4 transition hover:bg-brand-50/40"
+              >
+                <span className="text-ink">
+                  {eleve.prenom} {eleve.nom}
+                </span>
+                <span className="text-sm text-gray-500">
+                  {eleve.niveau.nom}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

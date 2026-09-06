@@ -1,6 +1,8 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { EnteteEspace } from "@/components/EnteteEspace";
+import { boutonPrimaire, carte, champTexte, etiquette } from "@/lib/ui";
 
 // Page Directeur : configuration du compte marchand CinetPay de son école
 // (Site ID + clé API). L'activation du paiement en ligne et le pourcentage
@@ -41,72 +43,73 @@ export default async function PaiementPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-8">
-      <h1 className="text-xl font-semibold">Paiement en ligne</h1>
-      <p className="mt-1 text-sm text-gray-600">
-        Connecte le compte marchand CinetPay de ton école pour que les
-        parents puissent payer directement en ligne via le lien WhatsApp —
-        l&apos;argent va sur le compte de l&apos;école, jamais chez EcolaPay.
-      </p>
+    <div className="min-h-screen">
+      <EnteteEspace role="Directeur" nomUtilisateur={session.user.name} />
 
-      <div className="mt-4 rounded border bg-gray-50 p-3 text-sm">
-        <p>
-          Statut :{" "}
-          <span className="font-medium">
-            {ecole.paiementEnLigneActif
-              ? "activé par EcolaPay"
-              : "non activé pour l'instant"}
-          </span>
+      <div className="mx-auto max-w-2xl p-8">
+        <h1 className="text-xl font-semibold text-ink">Paiement en ligne</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Connecte le compte marchand CinetPay de ton école pour que les
+          parents puissent payer directement en ligne via le lien WhatsApp —
+          l&apos;argent va sur le compte de l&apos;école, jamais chez EcolaPay.
         </p>
-        <p className="mt-1 text-gray-600">
-          Frais de confort appliqué au parent :{" "}
-          {ecole.fraisConfortPourcent !== null
-            ? `${ecole.fraisConfortPourcent}%`
-            : "non défini"}{" "}
-          — défini par EcolaPay, pas par l&apos;école.
-        </p>
-      </div>
 
-      <form
-        action={enregistrerConfigPaiement}
-        className="mt-4 space-y-4 rounded border bg-white p-4"
-      >
-        <div>
-          <label className="block text-sm font-medium">
-            Site ID CinetPay
-          </label>
-          <input
-            name="cinetpaySiteId"
-            type="text"
-            defaultValue={ecole.cinetpaySiteId ?? ""}
-            placeholder="Ex : 123456"
-            className="mt-1 w-full rounded border px-3 py-2"
-          />
+        <div className={`mt-4 space-y-1 text-sm ${carte}`}>
+          <p>
+            Statut :{" "}
+            <span
+              className={`font-medium ${
+                ecole.paiementEnLigneActif ? "text-green-700" : "text-gray-500"
+              }`}
+            >
+              {ecole.paiementEnLigneActif
+                ? "activé par EcolaPay"
+                : "non activé pour l'instant"}
+            </span>
+          </p>
+          <p className="text-gray-500">
+            Frais de confort appliqué au parent :{" "}
+            {ecole.fraisConfortPourcent !== null
+              ? `${ecole.fraisConfortPourcent}%`
+              : "non défini"}{" "}
+            — défini par EcolaPay, pas par l&apos;école.
+          </p>
         </div>
 
-        <div>
-          <label className="block text-sm font-medium">
-            Clé API CinetPay
-          </label>
-          <input
-            name="cinetpayApiKey"
-            type="password"
-            placeholder={
-              ecole.cinetpayApiKey
-                ? "Déjà enregistrée — laisser vide pour ne pas changer"
-                : "Coller la clé API CinetPay"
-            }
-            className="mt-1 w-full rounded border px-3 py-2"
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="rounded bg-black px-4 py-2 text-white"
+        <form
+          action={enregistrerConfigPaiement}
+          className={`mt-4 space-y-4 ${carte}`}
         >
-          Enregistrer
-        </button>
-      </form>
+          <div>
+            <label className={etiquette}>Site ID CinetPay</label>
+            <input
+              name="cinetpaySiteId"
+              type="text"
+              defaultValue={ecole.cinetpaySiteId ?? ""}
+              placeholder="Ex : 123456"
+              className={champTexte}
+            />
+          </div>
+
+          <div>
+            <label className={etiquette}>Clé API CinetPay</label>
+            <input
+              name="cinetpayApiKey"
+              type="password"
+              placeholder={
+                ecole.cinetpayApiKey
+                  ? "Déjà enregistrée — laisser vide pour ne pas changer"
+                  : "Coller la clé API CinetPay"
+              }
+              className={champTexte}
+            />
+          </div>
+
+          <button type="submit" className={boutonPrimaire}>
+            Enregistrer
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { redirect, notFound } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
+import { EnteteEspace } from "@/components/EnteteEspace";
+import { boutonPrimaire, carte, champTexte, etiquette, lienDiscret } from "@/lib/ui";
 
 // Caisse Éclair — étape 2 : fiche élève. Affiche le solde par tranche et
 // permet d'enregistrer un nouveau paiement.
@@ -94,148 +96,141 @@ export default async function FicheElevePage({
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-8">
-      <Link href="/caisse" className="text-sm text-blue-600 hover:underline">
-        ← Retour à la recherche
-      </Link>
+    <div className="min-h-screen">
+      <EnteteEspace role="Caisse" nomUtilisateur={session.user.name} />
 
-      <h1 className="mt-2 text-xl font-semibold">
-        {eleve.prenom} {eleve.nom}
-      </h1>
-      <p className="text-sm text-gray-600">
-        {eleve.niveau.nom} — Parent : {eleve.parentNom} (
-        {eleve.parentTelephone})
-      </p>
+      <div className="mx-auto max-w-2xl p-8">
+        <Link href="/caisse" className={lienDiscret}>
+          ← Retour à la recherche
+        </Link>
 
-      <table className="mt-6 w-full rounded border bg-white text-sm">
-        <thead>
-          <tr className="border-b bg-gray-50">
-            <th className="p-2 text-left">Tranche</th>
-            <th className="p-2 text-right">Dû</th>
-            <th className="p-2 text-right">Payé</th>
-            <th className="p-2 text-right">Solde</th>
-            {paiementEnLigneDisponible && (
-              <th className="p-2 text-left">Paiement en ligne</th>
-            )}
-          </tr>
-        </thead>
-        <tbody>
-          {tarifs.length === 0 && (
-            <tr>
-              <td colSpan={5} className="p-3 text-center text-gray-500">
-                Aucun tarif défini pour ce niveau.
-              </td>
-            </tr>
-          )}
-          {tarifs.map((tarif) => {
-            const paye = payeParTranche.get(tarif.trancheId) ?? 0;
-            const solde = tarif.montant - paye;
-            const lienPaiement = `${baseUrl}/paiement/${eleve.id}/${tarif.trancheId}`;
-            const messageWhatsapp = encodeURIComponent(
-              `Bonjour ${eleve.parentNom}, voici le lien pour régler en ligne la tranche "${tarif.tranche.nom}" de ${eleve.prenom} ${eleve.nom} : ${lienPaiement}`
-            );
-            const numeroWhatsapp = eleve.parentTelephone.replace(/[^\d]/g, "");
-            return (
-              <tr key={tarif.id} className="border-b">
-                <td className="p-2">{tarif.tranche.nom}</td>
-                <td className="p-2 text-right">
-                  {tarif.montant.toLocaleString("fr-FR")}
-                </td>
-                <td className="p-2 text-right">
-                  {paye.toLocaleString("fr-FR")}
-                </td>
-                <td
-                  className={`p-2 text-right font-medium ${
-                    solde > 0 ? "text-red-600" : "text-green-600"
-                  }`}
-                >
-                  {solde.toLocaleString("fr-FR")}
-                </td>
+        <h1 className="mt-2 text-xl font-semibold text-ink">
+          {eleve.prenom} {eleve.nom}
+        </h1>
+        <p className="text-sm text-gray-500">
+          {eleve.niveau.nom} — Parent : {eleve.parentNom} (
+          {eleve.parentTelephone})
+        </p>
+
+        <div className={`mt-6 overflow-x-auto ${carte} !p-0`}>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-brand-50/60 text-gray-600">
+                <th className="p-3 text-left font-medium">Tranche</th>
+                <th className="p-3 text-right font-medium">Dû</th>
+                <th className="p-3 text-right font-medium">Payé</th>
+                <th className="p-3 text-right font-medium">Solde</th>
                 {paiementEnLigneDisponible && (
-                  <td className="p-2">
-                    {solde > 0 ? (
-                      <div className="flex flex-col gap-1 text-xs">
-                        <a
-                          href={lienPaiement}
-                          target="_blank"
-                          className="text-blue-600 hover:underline"
-                        >
-                          Ouvrir le lien
-                        </a>
-                        <a
-                          href={`https://wa.me/${numeroWhatsapp}?text=${messageWhatsapp}`}
-                          target="_blank"
-                          className="text-green-600 hover:underline"
-                        >
-                          Envoyer sur WhatsApp
-                        </a>
-                      </div>
-                    ) : (
-                      <span className="text-xs text-gray-400">—</span>
-                    )}
-                  </td>
+                  <th className="p-3 text-left font-medium">Paiement en ligne</th>
                 )}
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
+            </thead>
+            <tbody>
+              {tarifs.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="p-4 text-center text-gray-500">
+                    Aucun tarif défini pour ce niveau.
+                  </td>
+                </tr>
+              )}
+              {tarifs.map((tarif) => {
+                const paye = payeParTranche.get(tarif.trancheId) ?? 0;
+                const solde = tarif.montant - paye;
+                const lienPaiement = `${baseUrl}/paiement/${eleve.id}/${tarif.trancheId}`;
+                const messageWhatsapp = encodeURIComponent(
+                  `Bonjour ${eleve.parentNom}, voici le lien pour régler en ligne la tranche "${tarif.tranche.nom}" de ${eleve.prenom} ${eleve.nom} : ${lienPaiement}`
+                );
+                const numeroWhatsapp = eleve.parentTelephone.replace(/[^\d]/g, "");
+                return (
+                  <tr key={tarif.id} className="border-t border-black/5">
+                    <td className="p-3">{tarif.tranche.nom}</td>
+                    <td className="p-3 text-right">
+                      {tarif.montant.toLocaleString("fr-FR")}
+                    </td>
+                    <td className="p-3 text-right">
+                      {paye.toLocaleString("fr-FR")}
+                    </td>
+                    <td
+                      className={`p-3 text-right font-medium ${
+                        solde > 0 ? "text-red-600" : "text-green-600"
+                      }`}
+                    >
+                      {solde.toLocaleString("fr-FR")}
+                    </td>
+                    {paiementEnLigneDisponible && (
+                      <td className="p-3">
+                        {solde > 0 ? (
+                          <div className="flex flex-col gap-1 text-xs">
+                            <a
+                              href={lienPaiement}
+                              target="_blank"
+                              className="text-brand-600 hover:underline"
+                            >
+                              Ouvrir le lien
+                            </a>
+                            <a
+                              href={`https://wa.me/${numeroWhatsapp}?text=${messageWhatsapp}`}
+                              target="_blank"
+                              className="text-green-600 hover:underline"
+                            >
+                              Envoyer sur WhatsApp
+                            </a>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-400">—</span>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
 
-      {tarifs.length > 0 && (
-        <form
-          action={enregistrerPaiement}
-          className="mt-6 flex flex-wrap items-end gap-3 rounded border bg-white p-4"
-        >
-          <input type="hidden" name="eleveId" value={eleve.id} />
-
-          <div>
-            <label className="block text-sm font-medium">Tranche</label>
-            <select
-              name="trancheId"
-              required
-              className="mt-1 rounded border px-3 py-2"
-            >
-              {tarifs.map((tarif) => (
-                <option key={tarif.trancheId} value={tarif.trancheId}>
-                  {tarif.tranche.nom}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium">
-              Montant (FCFA)
-            </label>
-            <input
-              name="montant"
-              type="number"
-              min={1}
-              required
-              className="mt-1 w-32 rounded border px-3 py-2"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium">Méthode</label>
-            <select
-              name="methode"
-              required
-              className="mt-1 rounded border px-3 py-2"
-            >
-              <option value="ESPECES">Espèces</option>
-              <option value="MOBILE_MONEY">Mobile Money</option>
-            </select>
-          </div>
-
-          <button
-            type="submit"
-            className="rounded bg-black px-4 py-2 text-white"
+        {tarifs.length > 0 && (
+          <form
+            action={enregistrerPaiement}
+            className={`mt-6 flex flex-wrap items-end gap-3 ${carte}`}
           >
-            Enregistrer le paiement
-          </button>
-        </form>
-      )}
+            <input type="hidden" name="eleveId" value={eleve.id} />
+
+            <div>
+              <label className={etiquette}>Tranche</label>
+              <select name="trancheId" required className={`${champTexte} mt-1`}>
+                {tarifs.map((tarif) => (
+                  <option key={tarif.trancheId} value={tarif.trancheId}>
+                    {tarif.tranche.nom}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className={etiquette}>Montant (FCFA)</label>
+              <input
+                name="montant"
+                type="number"
+                min={1}
+                required
+                className={`w-32 ${champTexte}`}
+              />
+            </div>
+
+            <div>
+              <label className={etiquette}>Méthode</label>
+              <select name="methode" required className={`${champTexte} mt-1`}>
+                <option value="ESPECES">Espèces</option>
+                <option value="MOBILE_MONEY">Mobile Money</option>
+              </select>
+            </div>
+
+            <button type="submit" className={boutonPrimaire}>
+              Enregistrer le paiement
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   );
 }

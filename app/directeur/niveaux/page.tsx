@@ -1,6 +1,8 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { EnteteEspace } from "@/components/EnteteEspace";
+import { boutonPrimaire, carte, champTexte, lienDanger } from "@/lib/ui";
 
 // Page Directeur : gestion des niveaux/classes de son école.
 // Étape 1 de la config école (les Tranches et Tarifs viendront ensuite).
@@ -66,60 +68,58 @@ export default async function NiveauxPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl p-8">
-      <h1 className="text-xl font-semibold">Niveaux de l&apos;école</h1>
-      <p className="mt-1 text-sm text-gray-600">
-        Les classes de ton école (ex : 6ème, Terminale D). Chaque élève sera
-        rattaché à l&apos;un de ces niveaux.
-      </p>
+    <div className="min-h-screen">
+      <EnteteEspace role="Directeur" nomUtilisateur={session.user.name} />
 
-      <form action={ajouterNiveau} className="mt-6 flex gap-2">
-        <input
-          name="nom"
-          type="text"
-          required
-          placeholder="Nom du niveau (ex : 6ème)"
-          className="flex-1 rounded border px-3 py-2"
-        />
-        <input
-          name="ordre"
-          type="number"
-          defaultValue={niveaux.length}
-          title="Ordre d'affichage"
-          className="w-20 rounded border px-3 py-2"
-        />
-        <button
-          type="submit"
-          className="rounded bg-black px-4 py-2 text-white"
-        >
-          Ajouter
-        </button>
-      </form>
+      <div className="mx-auto max-w-2xl p-8">
+        <h1 className="text-xl font-semibold text-ink">Niveaux de l&apos;école</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Les classes de ton école (ex : 6ème, Terminale D). Chaque élève sera
+          rattaché à l&apos;un de ces niveaux.
+        </p>
 
-      <ul className="mt-6 divide-y rounded border bg-white">
-        {niveaux.length === 0 && (
-          <li className="p-3 text-sm text-gray-500">
-            Aucun niveau pour l&apos;instant.
-          </li>
-        )}
-        {niveaux.map((niveau) => (
-          <li
-            key={niveau.id}
-            className="flex items-center justify-between p-3"
-          >
-            <span>{niveau.nom}</span>
-            <form action={supprimerNiveau}>
-              <input type="hidden" name="id" value={niveau.id} />
-              <button
-                type="submit"
-                className="text-sm text-red-600 hover:underline"
-              >
-                Supprimer
-              </button>
-            </form>
-          </li>
-        ))}
-      </ul>
+        <form action={ajouterNiveau} className={`mt-6 flex flex-wrap items-end gap-2 ${carte}`}>
+          <input
+            name="nom"
+            type="text"
+            required
+            placeholder="Nom du niveau (ex : 6ème)"
+            className={`flex-1 min-w-[180px] ${champTexte} mt-0`}
+          />
+          <input
+            name="ordre"
+            type="number"
+            defaultValue={niveaux.length}
+            title="Ordre d'affichage"
+            className={`w-20 ${champTexte} mt-0`}
+          />
+          <button type="submit" className={boutonPrimaire}>
+            Ajouter
+          </button>
+        </form>
+
+        <ul className={`mt-6 divide-y divide-black/5 ${carte} !p-0`}>
+          {niveaux.length === 0 && (
+            <li className="p-4 text-sm text-gray-500">
+              Aucun niveau pour l&apos;instant.
+            </li>
+          )}
+          {niveaux.map((niveau) => (
+            <li
+              key={niveau.id}
+              className="flex items-center justify-between p-4"
+            >
+              <span className="text-ink">{niveau.nom}</span>
+              <form action={supprimerNiveau}>
+                <input type="hidden" name="id" value={niveau.id} />
+                <button type="submit" className={lienDanger}>
+                  Supprimer
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

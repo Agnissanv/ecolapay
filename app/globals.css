@@ -1,26 +1,60 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Fond légèrement teinté (pas blanc pur) + encre plutôt que noir pur :
+     rend l'app moins "clinique" sans rien sacrifier au contraste. */
+  --color-canvas: oklch(98% 0.004 264);
+  --color-ink: oklch(24% 0.02 264);
+
+  /* Bleu-indigo "EcolaPay" : confiance / sérieux financier. */
+  --color-brand-50: oklch(96% 0.02 264);
+  --color-brand-100: oklch(92% 0.045 264);
+  --color-brand-200: oklch(85% 0.07 264);
+  --color-brand-400: oklch(64% 0.16 264);
+  --color-brand-500: oklch(56% 0.19 264);
+  --color-brand-600: oklch(48% 0.19 264);
+  --color-brand-700: oklch(40% 0.17 264);
+  --color-brand-900: oklch(24% 0.1 264);
+
+  /* Ambre chaud : réservé aux actions liées à l'argent (payer, confirmer). */
+  --color-accent-100: oklch(93% 0.06 75);
+  --color-accent-400: oklch(80% 0.14 75);
+  --color-accent-500: oklch(73% 0.16 70);
+  --color-accent-600: oklch(64% 0.17 58);
+  --color-accent-700: oklch(55% 0.17 50);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-canvas: var(--color-canvas);
+  --color-ink: var(--color-ink);
+  --color-brand-50: var(--color-brand-50);
+  --color-brand-100: var(--color-brand-100);
+  --color-brand-200: var(--color-brand-200);
+  --color-brand-400: var(--color-brand-400);
+  --color-brand-500: var(--color-brand-500);
+  --color-brand-600: var(--color-brand-600);
+  --color-brand-700: var(--color-brand-700);
+  --color-brand-900: var(--color-brand-900);
+  --color-accent-100: var(--color-accent-100);
+  --color-accent-400: var(--color-accent-400);
+  --color-accent-500: var(--color-accent-500);
+  --color-accent-600: var(--color-accent-600);
+  --color-accent-700: var(--color-accent-700);
+  --font-sans: var(--font-jakarta);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--color-brand-200);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+  border-radius: 4px;
 }

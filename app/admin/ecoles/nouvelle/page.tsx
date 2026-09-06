@@ -2,6 +2,8 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
+import { EnteteEspace } from "@/components/EnteteEspace";
+import { boutonPrimaire, carte, champTexte } from "@/lib/ui";
 
 // Super Admin — création d'une nouvelle école cliente, avec son premier
 // compte Directeur. C'est ce qui manquait pour onboarder une vraie école
@@ -49,82 +51,80 @@ export default async function NouvelleEcolePage() {
   }
 
   return (
-    <div className="mx-auto max-w-xl p-8">
-      <h1 className="text-xl font-semibold">Nouvelle école</h1>
-      <p className="mt-1 text-sm text-gray-600">
-        Crée l&apos;école et son premier compte Directeur en une fois.
-      </p>
+    <div className="min-h-screen">
+      <EnteteEspace role="Super Admin" nomUtilisateur={session.user.name} />
 
-      <form
-        action={creerEcole}
-        className="mt-6 space-y-4 rounded border bg-white p-4"
-      >
-        <div>
-          <h2 className="text-sm font-semibold text-gray-700">École</h2>
-          <div className="mt-2 space-y-2">
-            <input
-              name="nomEcole"
-              type="text"
-              required
-              placeholder="Nom de l'école"
-              className="w-full rounded border px-3 py-2"
-            />
-            <input
-              name="adresse"
-              type="text"
-              placeholder="Adresse (optionnel)"
-              className="w-full rounded border px-3 py-2"
-            />
-            <input
-              name="telephone"
-              type="tel"
-              placeholder="Téléphone (optionnel)"
-              className="w-full rounded border px-3 py-2"
-            />
+      <div className="mx-auto max-w-xl p-8">
+        <h1 className="text-xl font-semibold text-ink">Nouvelle école</h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Crée l&apos;école et son premier compte Directeur en une fois.
+        </p>
+
+        <form action={creerEcole} className={`mt-6 space-y-6 ${carte}`}>
+          <div>
+            <h2 className="text-sm font-semibold text-ink">École</h2>
+            <div className="mt-2 space-y-2">
+              <input
+                name="nomEcole"
+                type="text"
+                required
+                placeholder="Nom de l'école"
+                className={`${champTexte} mt-0`}
+              />
+              <input
+                name="adresse"
+                type="text"
+                placeholder="Adresse (optionnel)"
+                className={`${champTexte} mt-0`}
+              />
+              <input
+                name="telephone"
+                type="tel"
+                placeholder="Téléphone (optionnel)"
+                className={`${champTexte} mt-0`}
+              />
+            </div>
           </div>
-        </div>
 
-        <div>
-          <h2 className="text-sm font-semibold text-gray-700">
-            Premier compte Directeur
-          </h2>
-          <div className="mt-2 space-y-2">
-            <input
-              name="nomDirecteur"
-              type="text"
-              required
-              placeholder="Nom du directeur"
-              className="w-full rounded border px-3 py-2"
-            />
-            <input
-              name="emailDirecteur"
-              type="email"
-              required
-              placeholder="Email de connexion"
-              className="w-full rounded border px-3 py-2"
-            />
-            <input
-              name="motDePasseDirecteur"
-              type="text"
-              required
-              placeholder="Mot de passe initial"
-              className="w-full rounded border px-3 py-2"
-            />
-            <p className="text-xs text-gray-500">
-              Communique ces identifiants au directeur — il n&apos;y a pas
-              encore d&apos;écran pour qu&apos;il change son mot de passe
-              lui-même.
-            </p>
+          <div>
+            <h2 className="text-sm font-semibold text-ink">
+              Premier compte Directeur
+            </h2>
+            <div className="mt-2 space-y-2">
+              <input
+                name="nomDirecteur"
+                type="text"
+                required
+                placeholder="Nom du directeur"
+                className={`${champTexte} mt-0`}
+              />
+              <input
+                name="emailDirecteur"
+                type="email"
+                required
+                placeholder="Email de connexion"
+                className={`${champTexte} mt-0`}
+              />
+              <input
+                name="motDePasseDirecteur"
+                type="text"
+                required
+                placeholder="Mot de passe initial"
+                className={`${champTexte} mt-0`}
+              />
+              <p className="text-xs text-gray-500">
+                Communique ces identifiants au directeur — il n&apos;y a pas
+                encore d&apos;écran pour qu&apos;il change son mot de passe
+                lui-même.
+              </p>
+            </div>
           </div>
-        </div>
 
-        <button
-          type="submit"
-          className="rounded bg-black px-4 py-2 text-white"
-        >
-          Créer l&apos;école
-        </button>
-      </form>
+          <button type="submit" className={`w-full ${boutonPrimaire}`}>
+            Créer l&apos;école
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

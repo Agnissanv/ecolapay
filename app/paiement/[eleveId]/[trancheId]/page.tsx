@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { genererLienCinetPay } from "@/lib/cinetpay";
+import { Marque } from "@/components/Marque";
+import { boutonAccent, carte } from "@/lib/ui";
 
 // Page PUBLIQUE (pas d'authentification) : le parent y arrive via un lien
 // WhatsApp envoyé par la Caisse ou le Directeur, voit le montant dû + le
@@ -121,71 +123,84 @@ export default async function PagePaiementPublique({
   }
 
   return (
-    <div className="mx-auto max-w-md p-8">
-      <h1 className="text-xl font-semibold">Paiement de scolarité</h1>
-      <p className="mt-1 text-sm text-gray-600">
-        {eleve.prenom} {eleve.nom} — {eleve.niveau.nom}
-      </p>
-      <p className="text-sm text-gray-500">{ecole.nom}</p>
+    <div className="flex min-h-screen flex-col items-center px-4 py-10">
+      <Marque taille="base" />
 
-      {erreur && (
-        <p className="mt-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          Une erreur est survenue lors de la génération du lien de paiement.
-          Merci de réessayer, ou de contacter directement l&apos;école.
+      <div className={`mt-6 w-full max-w-sm ${carte}`}>
+        <p className="text-xs font-medium tracking-wide text-gray-400 uppercase">
+          {ecole.nom}
         </p>
-      )}
+        <h1 className="mt-1 text-lg font-semibold text-ink">
+          {eleve.prenom} {eleve.nom}
+        </h1>
+        <p className="text-sm text-gray-500">{eleve.niveau.nom}</p>
 
-      {!tarif && (
-        <p className="mt-4 rounded border bg-gray-50 p-3 text-sm text-gray-600">
-          Aucun tarif n&apos;est défini pour cette tranche.
-        </p>
-      )}
-
-      {tarif && solde <= 0 && (
-        <p className="mt-4 rounded border border-green-200 bg-green-50 p-3 text-sm text-green-700">
-          Cette tranche est déjà réglée. Merci !
-        </p>
-      )}
-
-      {tarif && solde > 0 && paiementIndisponible && (
-        <p className="mt-4 rounded border bg-gray-50 p-3 text-sm text-gray-600">
-          Le paiement en ligne n&apos;est pas disponible pour cette école pour
-          le moment. Merci de contacter directement l&apos;école pour régler
-          cette tranche.
-        </p>
-      )}
-
-      {tarif && solde > 0 && !paiementIndisponible && (
-        <>
-          <div className="mt-4 space-y-1 rounded border bg-gray-50 p-3 text-sm">
-            <p className="flex justify-between">
-              <span>Montant dû ({tranche.nom})</span>
-              <span>{solde.toLocaleString("fr-FR")} FCFA</span>
-            </p>
-            <p className="flex justify-between text-gray-600">
-              <span>Frais de confort ({fraisPourcent}%)</span>
-              <span>{frais.toLocaleString("fr-FR")} FCFA</span>
-            </p>
-            <p className="mt-1 flex justify-between border-t pt-1 font-semibold">
-              <span>Total à payer</span>
-              <span>{total.toLocaleString("fr-FR")} FCFA</span>
-            </p>
-          </div>
-
-          <form action={payer} className="mt-4">
-            <button
-              type="submit"
-              className="w-full rounded bg-black px-4 py-3 text-white"
-            >
-              Payer {total.toLocaleString("fr-FR")} FCFA en ligne
-            </button>
-          </form>
-          <p className="mt-2 text-center text-xs text-gray-400">
-            Paiement sécurisé via CinetPay (Wave, Orange Money, MTN Money,
-            Moov Money).
+        {erreur && (
+          <p className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            Une erreur est survenue lors de la génération du lien de
+            paiement. Merci de réessayer, ou de contacter directement
+            l&apos;école.
           </p>
-        </>
-      )}
+        )}
+
+        {!tarif && (
+          <p className="mt-4 rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
+            Aucun tarif n&apos;est défini pour cette tranche.
+          </p>
+        )}
+
+        {tarif && solde <= 0 && (
+          <p className="mt-4 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700">
+            Cette tranche est déjà réglée. Merci !
+          </p>
+        )}
+
+        {tarif && solde > 0 && paiementIndisponible && (
+          <p className="mt-4 rounded-lg bg-gray-50 p-3 text-sm text-gray-600">
+            Le paiement en ligne n&apos;est pas disponible pour cette école
+            pour le moment. Merci de contacter directement l&apos;école pour
+            régler cette tranche.
+          </p>
+        )}
+
+        {tarif && solde > 0 && !paiementIndisponible && (
+          <>
+            <div className="mt-5 space-y-1.5 rounded-xl bg-brand-50/60 p-4 text-sm">
+              <p className="flex justify-between text-gray-600">
+                <span>Montant dû ({tranche.nom})</span>
+                <span className="font-medium text-ink">
+                  {solde.toLocaleString("fr-FR")} FCFA
+                </span>
+              </p>
+              <p className="flex justify-between text-gray-500">
+                <span>Frais de confort ({fraisPourcent}%)</span>
+                <span>{frais.toLocaleString("fr-FR")} FCFA</span>
+              </p>
+              <p className="mt-2 flex justify-between border-t border-brand-100 pt-2 text-base font-semibold text-brand-900">
+                <span>Total à payer</span>
+                <span>{total.toLocaleString("fr-FR")} FCFA</span>
+              </p>
+            </div>
+
+            <form action={payer} className="mt-5">
+              <button type="submit" className={`w-full ${boutonAccent}`}>
+                Payer {total.toLocaleString("fr-FR")} FCFA en ligne
+              </button>
+            </form>
+
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-gray-400">
+              <span>Paiement sécurisé via</span>
+              <span className="font-medium text-gray-500">Wave</span>
+              <span>·</span>
+              <span className="font-medium text-gray-500">Orange Money</span>
+              <span>·</span>
+              <span className="font-medium text-gray-500">MTN Money</span>
+              <span>·</span>
+              <span className="font-medium text-gray-500">Moov Money</span>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
