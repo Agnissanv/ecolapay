@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { EnteteEspace } from "@/components/EnteteEspace";
+import { ChampSecret } from "@/components/ChampSecret";
 import { boutonPrimaire, carte, champTexte, etiquette } from "@/lib/ui";
 
 // Page Directeur : configuration du compte marchand CinetPay de son école
@@ -93,15 +94,13 @@ export default async function PaiementPage() {
 
           <div>
             <label className={etiquette}>Clé API CinetPay</label>
-            <input
+            <ChampSecret
               name="cinetpayApiKey"
-              type="password"
               placeholder={
                 ecole.cinetpayApiKey
                   ? "Déjà enregistrée — laisser vide pour ne pas changer"
                   : "Coller la clé API CinetPay"
               }
-              className={champTexte}
             />
           </div>
 

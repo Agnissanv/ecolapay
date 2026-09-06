@@ -6,22 +6,24 @@
   --color-canvas: oklch(98% 0.004 264);
   --color-ink: oklch(24% 0.02 264);
 
-  /* Bleu-indigo "EcolaPay" : confiance / sérieux financier. */
-  --color-brand-50: oklch(96% 0.02 264);
-  --color-brand-100: oklch(92% 0.045 264);
-  --color-brand-200: oklch(85% 0.07 264);
-  --color-brand-400: oklch(64% 0.16 264);
-  --color-brand-500: oklch(56% 0.19 264);
-  --color-brand-600: oklch(48% 0.19 264);
-  --color-brand-700: oklch(40% 0.17 264);
-  --color-brand-900: oklch(24% 0.1 264);
+  /* Bleu-indigo "EcolaPay" : confiance / sérieux financier. Valeurs en hex
+     (pas oklch) pour matcher exactement les couleurs codées en dur dans
+     le logo (components/Marque.tsx, app/icon.svg). */
+  --color-brand-50: #EEF2FF;
+  --color-brand-100: #E0E7FF;
+  --color-brand-200: #C7D2FE;
+  --color-brand-400: #818CF8;
+  --color-brand-500: #4F46E5;
+  --color-brand-600: #4338CA;
+  --color-brand-700: #3730A3;
+  --color-brand-900: #1E1B4B;
 
   /* Ambre chaud : réservé aux actions liées à l'argent (payer, confirmer). */
-  --color-accent-100: oklch(93% 0.06 75);
-  --color-accent-400: oklch(80% 0.14 75);
-  --color-accent-500: oklch(73% 0.16 70);
-  --color-accent-600: oklch(64% 0.17 58);
-  --color-accent-700: oklch(55% 0.17 50);
+  --color-accent-100: #FEF3C7;
+  --color-accent-400: #FBBF24;
+  --color-accent-500: #F59E0B;
+  --color-accent-600: #D97706;
+  --color-accent-700: #B45309;
 }
 
 @theme inline {

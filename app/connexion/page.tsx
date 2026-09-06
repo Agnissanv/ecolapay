@@ -2,6 +2,7 @@ import { AuthError } from "next-auth";
 import { redirect } from "next/navigation";
 import { signIn } from "@/auth";
 import { Marque } from "@/components/Marque";
+import { ChampSecret } from "@/components/ChampSecret";
 import { boutonPrimaire, champTexte, etiquette } from "@/lib/ui";
 
 export default async function ConnexionPage({
@@ -58,12 +59,7 @@ export default async function ConnexionPage({
 
           <div>
             <label className={etiquette}>Mot de passe</label>
-            <input
-              name="password"
-              type="password"
-              required
-              className={champTexte}
-            />
+            <ChampSecret name="password" required />
           </div>
 
           <button type="submit" className={`w-full ${boutonPrimaire}`}>
